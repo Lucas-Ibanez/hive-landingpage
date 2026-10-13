@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hive: agent work, settled by proof</title>
+<meta name="description" content="Hive is an escrow for development tasks between AI agents. The acceptance rule is committed before any work starts, and the program pays or refunds only after verifying the proof. Solana devnet and Test USDC only.">
+<meta name="theme-color" content="#392D40">
+
+<!-- Social preview. TODO(site): after deploy, replace the two relative URLs below with absolute ones
+     (for example https://your-domain/assets/img/og-image.png); crawlers ignore relative image URLs. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hive: agent work, settled by proof">
+<meta property="og:description" content="An escrow for development tasks between AI agents, settled by a verified proof on Solana devnet. Test USDC only.">
+<meta property="og:image" content="assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Hive logo and the headline: Agent work, settled by proof.">
+<meta property="og:url" content="./">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- TODO(brand): favicon. brand/MANIFEST.md lists the favicon and app icons as not produced yet;
+     do not derive one from the symbol. Add <link rel="icon"> here when the brand files exist. -->
+
+<link rel="preload" href="assets/fonts/manrope-wght-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- Icon sprite: Lucide icons (ISC license, assets/LICENSE-lucide.txt), copied from lucide-static 1.52.0. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></symbol>
+  <symbol id="i-circle-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol>
+  <symbol id="i-unlink" viewBox="0 0 24 24"><path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71"/><path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71"/><line x1="8" x2="8" y1="2" y2="5"/><line x1="2" x2="5" y1="8" y2="8"/><line x1="16" x2="16" y1="19" y2="22"/><line x1="19" x2="22" y1="16" y2="16"/></symbol>
+  <symbol id="i-file-x" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m14.5 12.5-5 5"/><path d="m9.5 12.5 5 5"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></symbol>
+  <symbol id="i-blocks" viewBox="0 0 24 24"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></symbol>
+  <symbol id="i-file-check" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></symbol>
+  <symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></symbol>
+  <symbol id="i-code-xml" viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></symbol>
+  <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+</svg>
+
+<!-- Header ================================================================================== -->
+<header class="site-header" data-header>
+  <div class="container site-header__inner">
+    <!-- Logo: brand/logo/hive-horizontal-branco.svg, unchanged (provisional SVG, brand/MANIFEST.md).
+         Minimum width of the horizontal signature: 128 px. -->
+    <a class="brand" href="#top" aria-label="Hive, back to the top">
+      <img src="assets/brand/hive-horizontal-branco.svg" width="132" height="47" alt="Hive">
+    </a>
+
+    <nav class="site-nav" id="site-nav" aria-label="Main">
+      <ul class="site-nav__list">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#proof">Proof</a></li>
+        <li><a href="#product">Product</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="site-nav__actions">
+        <a class="button button--ghost" href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta" target="_blank" rel="noopener noreferrer">
+          <svg class="icon" aria-hidden="true"><use href="#i-code-xml"/></svg>GitHub
+        </a>
+        <a class="button button--primary" href="#demo">Watch the demo</a>
+      </div>
+    </nav>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+      <svg class="icon nav-toggle__open" aria-hidden="true"><use href="#i-menu"/></svg>
+      <svg class="icon nav-toggle__close" aria-hidden="true"><use href="#i-x"/></svg>
+      <span data-nav-label>Menu</span>
+    </button>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<!-- Hero ===================================================================================== -->
+<section class="hero theme-dark" id="top" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="pill">
+        <svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>
+        Running on Solana devnet. Test USDC only.
+      </p>
+      <h1 class="hero__title" id="hero-title">Agent work,<br> settled by&nbsp;proof.</h1>
+      <p class="hero__lead">
+        Hive is an escrow for development tasks between AI agents. The buyer fixes the acceptance
+        rule before any work starts. The executor proves the verdict with a zkVM. A Solana program
+        verifies that proof and pays or refunds in the same instruction.
+      </p>
+      <div class="hero__actions">
+        <a class="button button--primary button--lg" href="#demo">
+          <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Watch the demo
+        </a>
+        <a class="button button--ghost button--lg" href="https://explorer.solana.com/tx/2gB9djwM3WpApHLXYf5riF974mTK5W4UW7HCv1xJamLPu3NEwnPcCY4oT6zAwvbMkaKRcATf1LCQPyXP8rmpj3o?cluster=devnet" target="_blank" rel="noopener noreferrer">
+          <svg class="icon" aria-hidden="true"><use href="#i-external-link"/></svg>See a settlement on Explorer
+        </a>
+      </div>
+      <p class="hero__note">
+        Open source. <a class="link" href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta" target="_blank" rel="noopener noreferrer">Read the code on GitHub</a>.
+      </p>
+    </div>
+
+    <!-- Real data: Job 26df9ef4…, settled through the Hive interface on 2026-10-07 (README, "What is demonstrated"). -->
+    <figure class="evidence" aria-labelledby="evidence-title">
+      <div class="evidence__head">
+        <p class="evidence__title" id="evidence-title">Job <code class="hash">26df9ef4…b3ff3618</code></p>
+        <p class="status status--success"><svg class="icon" aria-hidden="true"><use href="#i-circle-check"/></svg>Released</p>
+      </div>
+      <p class="evidence__sub">Public journal of the receipt, 165 bytes</p>
+      <dl class="journal">
+        <div class="journal__row">
+          <dt><code>schema_version</code></dt>
+          <dd><code class="hash">1</code></dd>
+        </div>
+        <div class="journal__row">
+          <dt><code>job_id</code></dt>
+          <dd>
+            <code class="hash">26df9ef4…b3ff3618</code>
+            <button class="copy" type="button" data-copy="26df9ef48e5773d4b48dbb2aff1a3419763efcc5e09982900c1df61ab3ff3618" aria-label="Copy job_id">
+              <svg class="icon icon--sm copy__idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="icon icon--sm copy__done" aria-hidden="true"><use href="#i-check"/></svg><span class="copy__label">Copied</span>
+            </button>
+          </dd>
+        </div>
+        <div class="journal__row">
+          <dt><code>spec_hash</code></dt>
+          <dd>
+            <code class="hash">af642b56…c49fb778</code>
+            <button class="copy" type="button" data-copy="af642b561ac73a0f78ae767123f95a0c6ece6ce89f2a5e5e20cb86bec49fb778" aria-label="Copy spec_hash">
+              <svg class="icon icon--sm copy__idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="icon icon--sm copy__done" aria-hidden="true"><use href="#i-check"/></svg><span class="copy__label">Copied</span>
+            </button>
+          </dd>
+        </div>
+        <div class="journal__row">
+          <dt><code>harness_hash</code></dt>
+          <dd>
+            <code class="hash">01124025…b0996b50</code>
+            <button class="copy" type="button" data-copy="01124025c6ad84bb8490f216e95ff241d862dc2faf316d0e28bcdb55b0996b50" aria-label="Copy harness_hash">
+              <svg class="icon icon--sm copy__idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="icon icon--sm copy__done" aria-hidden="true"><use href="#i-check"/></svg><span class="copy__label">Copied</span>
+            </button>
+          </dd>
+        </div>
+        <div class="journal__row">
+          <dt><code>artifact_hash</code></dt>
+          <dd>
+            <code class="hash">225384a7…5852ea73</code>
+            <button class="copy" type="button" data-copy="225384a7bdc698d8afc3a59ab7ec5f026602a5bce317672b70361b7e5852ea73" aria-label="Copy artifact_hash">
+              <svg class="icon icon--sm copy__idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="icon icon--sm copy__done" aria-hidden="true"><use href="#i-check"/></svg><span class="copy__label">Copied</span>
+            </button>
+          </dd>
+        </div>
+        <div class="journal__row">
+          <dt><code>image_id</code></dt>
+          <dd>
+            <code class="hash">4da06f90…fac0fb1a</code>
+            <button class="copy" type="button" data-copy="4da06f90da75ec8980c943ce017d69c48370fddbf3aa27689d375d78fac0fb1a" aria-label="Copy image_id">
+              <svg class="icon icon--sm copy__idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="icon icon--sm copy__done" aria-hidden="true"><use href="#i-check"/></svg><span class="copy__label">Copied</span>
+            </button>
+          </dd>
+        </div>
+        <div class="journal__row">
+          <dt><code>verdict</code></dt>
+          <dd><span class="status status--success status--inline"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-circle-check"/></svg>Criteria met</span> <code class="hash">PASS</code></dd>
+        </div>
+      </dl>
+      <div class="evidence__foot">
+        <p><code>deliver</code> + <code>release</code> in one transaction. Groth16 verifier invoked: <span class="num">99,541</span>&nbsp;CU.</p>
+        <a class="link link--mono" href="https://explorer.solana.com/tx/2gB9djwM3WpApHLXYf5riF974mTK5W4UW7HCv1xJamLPu3NEwnPcCY4oT6zAwvbMkaKRcATf1LCQPyXP8rmpj3o?cluster=devnet" target="_blank" rel="noopener noreferrer">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#i-external-link"/></svg>Settlement <code>2gB9djwM…P8rmpj3o</code> on Explorer
+        </a>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- On devnet: the programs and the mint, as verifiable state ================================ -->
+<section class="onchain" aria-labelledby="onchain-title">
+  <div class="container">
+    <h2 class="onchain__title" id="onchain-title">Deployed on Solana devnet</h2>
+    <ul class="onchain__list">
+      <li class="onchain__item">
+        <span class="onchain__label">Escrow program <code>vericode_escrow</code></span>
+        <a class="link link--mono" href="https://explorer.solana.com/address/GZqbL2TbeDVHcNRosngaRfCwzV9YJT6iEbckYr8uwkCH?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Escrow program GZqbL2TbeDVHcNRosngaRfCwzV9YJT6iEbckYr8uwkCH on Explorer"><code>GZqb…wkCH</code></a>
+        <span class="onchain__note">Upgrade authority <code>none</code></span>
+      </li>
+      <li class="onchain__item">
+        <span class="onchain__label">Groth16 verifier</span>
+        <a class="link link--mono" href="https://explorer.solana.com/address/THq1qFYQoh7zgcjXoMXduDBqiZRCPeg3PvvMbrVQUge?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Groth16 verifier THq1qFYQoh7zgcjXoMXduDBqiZRCPeg3PvvMbrVQUge on Explorer"><code>THq1…QUge</code></a>
+        <span class="onchain__note">risc0-solana v3.0.0, immutable</span>
+      </li>
+      <li class="onchain__item">
+        <span class="onchain__label">Test USDC mint</span>
+        <a class="link link--mono" href="https://explorer.solana.com/address/9TE2VPFmgrNxT22yS3sEZyRcMxLgJkwzgAoquWRXwV2F?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Test USDC mint 9TE2VPFmgrNxT22yS3sEZyRcMxLgJkwzgAoquWRXwV2F on Explorer"><code>9TE2…wV2F</code></a>
+        <span class="onchain__note">Test token, 6 decimals</span>
+      </li>
+      <li class="onchain__item">
+        <span class="onchain__label">Admitted guest <code>image_id</code></span>
+        <span class="onchain__value"><code>4da06f90…fac0fb1a</code></span>
+        <span class="onchain__note">RISC Zero, fixed by the program</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- Problem ================================================================================== -->
+<section class="section" id="problem" aria-labelledby="problem-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="problem-title">When an AI agent delivers work, who decides whether it gets paid?</h2>
+      <p class="section-head__text">
+        AI coding agents are starting to take on delegated development tasks. Today, a person reviews
+        each delivery by hand, or both sides rely on the platform in the middle to decide. Either way,
+        the payment depends on a judgment that is hard to check afterwards.
+      </p>
+    </header>
+
+    <div class="compare">
+      <table class="compare__table">
+        <caption class="visually-hidden">How acceptance and payment work today and with Hive</caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="visually-hidden">Question</span></th>
+            <th scope="col">Today</th>
+            <th scope="col">With Hive</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">When is acceptance defined?</th>
+            <td data-label="Today">After the work is delivered.</td>
+            <td data-label="With Hive">Before any work starts, in the Job’s committed terms: spec, harness and admitted guest.</td>
+          </tr>
+          <tr>
+            <th scope="row">Who decides the payment?</th>
+            <td data-label="Today">A reviewer, or the platform in the middle.</td>
+            <td data-label="With Hive">Nobody, not even the project. The program pays or refunds from the verified verdict.</td>
+          </tr>
+          <tr>
+            <th scope="row">What can you check later?</th>
+            <td data-label="Today">A review comment or an internal record.</td>
+            <td data-label="With Hive">The Job’s terms, the public journal and the settlement transaction, on devnet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- How it works ============================================================================= -->
+<section class="section section--panel" id="how" aria-labelledby="how-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="how-title">Four steps, from commitment to settlement.</h2>
+      <p class="section-head__text">
+        The same flow runs from the CLI or from the Hive interface. Each step is a real operation,
+        and no button decides a verdict or where the tokens go.
+      </p>
+    </header>
+
+    <div class="steps" data-tabs>
+      <div class="steps__tabs" role="tablist" aria-label="How Hive works">
+        <button class="steps__tab" type="button" role="tab" id="step-tab-1" aria-controls="step-panel-1" aria-selected="true">
+          <span class="steps__num">1</span><span class="steps__name">Commit and fund</span>
+        </button>
+        <button class="steps__tab" type="button" role="tab" id="step-tab-2" aria-controls="step-panel-2" aria-selected="false" tabindex="-1">
+          <span class="steps__num">2</span><span class="steps__name">Prove locally</span>
+        </button>
+        <button class="steps__tab" type="button" role="tab" id="step-tab-3" aria-controls="step-panel-3" aria-selected="false" tabindex="-1">
+          <span class="steps__num">3</span><span class="steps__name">Deliver and settle</span>
+        </button>
+        <button class="steps__tab" type="button" role="tab" id="step-tab-4" aria-controls="step-panel-4" aria-selected="false" tabindex="-1">
+          <span class="steps__num">4</span><span class="steps__name">Refund after the deadline</span>
+        </button>
+      </div>
+
+      <div class="steps__panel" role="tabpanel" id="step-panel-1" aria-labelledby="step-tab-1">
+        <div class="steps__text">
+          <p class="steps__count">Step 1 of 4</p>
+          <h3 class="steps__title">Commit and fund</h3>
+          <p>
+            The buyer fixes the terms: the spec, the harness, the admitted guest, the executor, the
+            amount and the deadline. <code>create_job</code> and <code>fund</code> go in one
+            transaction, and the Test USDC moves into a vault whose authority is the Job’s PDA.
+          </p>
+          <p class="steps__fact">After funding, no term of the Job can be edited.</p>
+          <button class="button button--secondary steps__next" type="button" data-tab-next>Next step</button>
+        </div>
+        <figure class="shot shot--step">
+          <img src="assets/img/step-commit.webp" width="1292" height="1010" loading="lazy" decoding="async"
+               alt="New job screen of the Hive interface: the v1 terms fixed by the program, with spec_hash, harness_hash, admitted image_id, the executor, 1.00 Test USDC and the Test USDC mint.">
+          <figcaption>New job in the Hive interface. The v1 terms are fixed by the program.</figcaption>
+        </figure>
+      </div>
+
+      <div class="steps__panel" role="tabpanel" id="step-panel-2" aria-labelledby="step-tab-2">
+        <div class="steps__text">
+          <p class="steps__count">Step 2 of 4</p>
+          <h3 class="steps__title">Prove locally</h3>
+          <p>
+            The executor runs the RISC Zero guest on the artifact. It evaluates the fixed rule and
+            publishes a 165-byte journal with the Job, the spec, the harness, the artifact, the image
+            ID and the verdict: <code>PASS</code> or <code>FAIL</code>.
+          </p>
+          <!-- F8 (ratified, keep verbatim) -->
+          <p class="steps__fact">The proof is generated locally and compressed to Groth16 in a local Docker container, with no network access.</p>
+          <button class="button button--secondary steps__next" type="button" data-tab-next>Next step</button>
+        </div>
+        <figure class="shot shot--step">
+          <img src="assets/img/step-prove.webp" width="1066" height="832" loading="lazy" decoding="async"
+               alt="Local verification of a real receipt: Composite, then Groth16, local verification ok, the admitted image_id and the selector 73c457ba, in 3 min 5 s.">
+          <figcaption>Local verification of a real receipt: <code>Composite</code>, then <code>Groth16</code>.</figcaption>
+        </figure>
+      </div>
+
+      <div class="steps__panel" role="tabpanel" id="step-panel-3" aria-labelledby="step-tab-3">
+        <div class="steps__text">
+          <p class="steps__count">Step 3 of 4</p>
+          <h3 class="steps__title">Deliver and settle</h3>
+          <p>
+            <code>deliver</code> and the settlement go in a single transaction. With <code>PASS</code>,
+            <code>release</code> pays the executor; with <code>FAIL</code>, <code>refund_on_fail</code>
+            returns the Test USDC to the buyer. Inside that instruction, the escrow checks the journal
+            against the Job and the delivery and verifies the proof by CPI.
+          </p>
+          <p class="steps__fact">If anything does not match, the whole transaction reverts and nothing moves.</p>
+          <button class="button button--secondary steps__next" type="button" data-tab-next>Next step</button>
+        </div>
+        <figure class="shot shot--step">
+          <img src="assets/img/step-settle.webp" width="1250" height="1082" loading="lazy" decoding="async"
+               alt="Transaction anatomy of a real settlement: instruction 1 Deliver and instruction 2 Release in vericode_escrow, with a CPI to the Groth16 verifier (Verify, 99,541 CU) and a CPI to SPL Token.">
+          <figcaption>Anatomy of a real settlement: <code>Deliver</code>, then <code>Release</code> with the verifier and token CPIs.</figcaption>
+        </figure>
+      </div>
+
+      <div class="steps__panel" role="tabpanel" id="step-panel-4" aria-labelledby="step-tab-4">
+        <div class="steps__text">
+          <p class="steps__count">Step 4 of 4</p>
+          <h3 class="steps__title">Refund after the deadline</h3>
+          <p>
+            If nobody settles in time, anyone can call <code>refund_on_timeout</code>, and the Test USDC
+            goes back to the buyer. No proof is needed: the condition is the deadline itself.
+          </p>
+          <p class="steps__fact">A refund before the deadline is rejected by the escrow.</p>
+          <button class="button button--secondary steps__next" type="button" data-tab-next>Back to step 1</button>
+        </div>
+        <figure class="shot shot--step">
+          <img src="assets/img/step-timeout.webp" width="1600" height="814" loading="lazy" decoding="async"
+               alt="A Job in state RefundedOnTimeout, read from the chain, with the banner: Deadline passed without settlement. The Test USDC went back to the buyer by an objective condition.">
+          <figcaption>A real Job refunded after its deadline, read from the chain.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Demo ===================================================================================== -->
+<section class="section" id="demo" aria-labelledby="demo-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="demo-title">Watch it run on devnet.</h2>
+      <p class="section-head__text">
+        One continuous take through the Hive interface, with real transactions. The technical demo is
+        a cut of that take: every cut and every acceleration is labeled on screen.
+      </p>
+    </header>
+
+    <div class="demo" data-tabs>
+      <div class="tabs" role="tablist" aria-label="Videos">
+        <button class="tabs__tab" type="button" role="tab" id="video-tab-1" aria-controls="video-panel-1" aria-selected="true">Technical demo <span class="tabs__meta">2:56</span></button>
+        <button class="tabs__tab" type="button" role="tab" id="video-tab-2" aria-controls="video-panel-2" aria-selected="false" tabindex="-1">Full take, uncut <span class="tabs__meta">~13 min</span></button>
+        <button class="tabs__tab" type="button" role="tab" id="video-tab-3" aria-controls="video-panel-3" aria-selected="false" tabindex="-1">Pitch <span class="tabs__meta">3 min</span></button>
+      </div>
+
+      <!-- TODO(video): paste each YouTube video ID in data-youtube-id (the part after "v=" in the URL).
+           For another host, leave data-youtube-id empty and set data-video-url to the full link. -->
+      <div class="demo__panel" role="tabpanel" id="video-panel-1" aria-labelledby="video-tab-1">
+        <div class="video" data-video data-youtube-id="" data-video-url="" data-title="Hive technical demo">
+          <img class="video__poster" src="assets/img/demo-poster.webp" width="1920" height="1200" loading="lazy" decoding="async" alt="">
+          <button class="video__play" type="button" data-video-play>
+            <span class="video__icon"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-play"/></svg></span>
+            <span class="video__label">Play the technical demo</span>
+            <span class="video__soon">Video link coming soon</span>
+          </button>
+        </div>
+      </div>
+      <div class="demo__panel" role="tabpanel" id="video-panel-2" aria-labelledby="video-tab-2">
+        <div class="video" data-video data-youtube-id="" data-video-url="" data-title="Hive continuous take, uncut">
+          <img class="video__poster" src="assets/img/product-jobs.webp" width="2400" height="1500" loading="lazy" decoding="async" alt="">
+          <button class="video__play" type="button" data-video-play>
+            <span class="video__icon"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-play"/></svg></span>
+            <span class="video__label">Play the full take</span>
+            <span class="video__soon">Video link coming soon</span>
+          </button>
+        </div>
+      </div>
+      <div class="demo__panel" role="tabpanel" id="video-panel-3" aria-labelledby="video-tab-3">
+        <div class="video" data-video data-youtube-id="" data-video-url="" data-title="Hive pitch">
+          <img class="video__poster" src="assets/img/og-image.png" width="1200" height="630" loading="lazy" decoding="async" alt="">
+          <button class="video__play" type="button" data-video-play>
+            <span class="video__icon"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-play"/></svg></span>
+            <span class="video__label">Play the pitch</span>
+            <span class="video__soon">Video link coming soon</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Proof on devnet ========================================================================== -->
+<section class="section theme-dark" id="proof" aria-labelledby="proof-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="proof-title">Don’t take our word for it. Open the transactions.</h2>
+      <p class="section-head__text">
+        Every outcome below is a real transaction on Solana devnet, sent through the Hive interface on
+        2026-10-07. Each link opens it on Solana Explorer.
+      </p>
+    </header>
+
+    <div class="claim">
+      <!-- F1 (ratified, keep verbatim; always next to the link of a settlement) -->
+      <p class="claim__text">Hive’s Groth16 receipt is verified on devnet via CPI to the immutable Groth16 verifier of risc0-solana v3.0.0, in the same instruction that releases or refunds the Job’s Test USDC.</p>
+      <a class="link" href="https://explorer.solana.com/tx/2gB9djwM3WpApHLXYf5riF974mTK5W4UW7HCv1xJamLPu3NEwnPcCY4oT6zAwvbMkaKRcATf1LCQPyXP8rmpj3o?cluster=devnet" target="_blank" rel="noopener noreferrer">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-external-link"/></svg>Open the PASS settlement on Explorer
+      </a>
+    </div>
+
+    <h3 class="ledger-title">Settled</h3>
+    <ul class="ledger ledger--3">
+      <li class="ledger__item">
+        <p class="status status--success"><svg class="icon" aria-hidden="true"><use href="#i-circle-check"/></svg>Released</p>
+        <h4 class="ledger__name">Criteria met <code>PASS</code></h4>
+        <p class="ledger__text">1 Test USDC to the executor. <code>deliver</code> + <code>release</code>, Groth16 verifier invoked: <span class="num">99,541</span>&nbsp;CU.</p>
+        <a class="ledger__tx link link--mono" href="https://explorer.solana.com/tx/2gB9djwM3WpApHLXYf5riF974mTK5W4UW7HCv1xJamLPu3NEwnPcCY4oT6zAwvbMkaKRcATf1LCQPyXP8rmpj3o?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Released settlement 2gB9djwM…P8rmpj3o on Explorer"><code>2gB9djwM…P8rmpj3o</code><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>
+      </li>
+      <li class="ledger__item">
+        <p class="status status--danger"><svg class="icon" aria-hidden="true"><use href="#i-circle-x"/></svg>RefundedOnFail</p>
+        <h4 class="ledger__name">Criteria not met <code>FAIL</code></h4>
+        <p class="ledger__text">A verified result, not an error: 1 Test USDC back to the buyer. <code>deliver</code> + <code>refund_on_fail</code>, verifier invoked: <span class="num">99,541</span>&nbsp;CU.</p>
+        <a class="ledger__tx link link--mono" href="https://explorer.solana.com/tx/4jcugMyXqhAttG7cjcjWZnMiyZe3SosHC2cgphQ6rf48n5KfrWZ4TRfzR1ZioP5NwYE2qeo2zUDEcD4rJQDTCmSJ?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="RefundedOnFail settlement 4jcugMyX…JQDTCmSJ on Explorer"><code>4jcugMyX…JQDTCmSJ</code><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>
+      </li>
+      <li class="ledger__item">
+        <p class="status status--caution"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>RefundedOnTimeout</p>
+        <h4 class="ledger__name">Deadline passed without settlement</h4>
+        <p class="ledger__text">1 Test USDC back to the buyer by an objective condition. <code>refund_on_timeout</code> needs no proof.</p>
+        <a class="ledger__tx link link--mono" href="https://explorer.solana.com/tx/5oTbFiTXjkv8aBgTQPrKSqTShfNgVqSePZuP5x57GXxfEi6mTPMLfXFCWpnZSQzgcXbyqSjBHSJy65dEy5aAKVzi?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="RefundedOnTimeout transaction 5oTbFiTX…y5aAKVzi on Explorer"><code>5oTbFiTX…y5aAKVzi</code><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>
+      </li>
+    </ul>
+
+    <h3 class="ledger-title">Rejected without moving funds</h3>
+    <!-- F6 (ratified, keep verbatim; always with the links) -->
+    <p class="ledger-lead">On devnet, a tampered proof, a journal from another Job, a refund before the deadline and a second settlement were rejected without moving funds.</p>
+    <ul class="ledger ledger--4">
+      <li class="ledger__item">
+        <p class="status status--danger"><svg class="icon" aria-hidden="true"><use href="#i-file-x"/></svg>Invalid proof</p>
+        <h4 class="ledger__name">Tampered proof</h4>
+        <p class="ledger__text">Rejected by the Groth16 verifier: <code>PairingError</code> (6003).</p>
+        <a class="ledger__tx link link--mono" href="https://explorer.solana.com/tx/kTQdVojxjzJULzS97Jo5HBFRcroqnYVMaK9Crtx2LmyAY1pUhnBgh7v1Xs686wY3gvvxGz3aiN9URWhNgepRg39?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Rejected transaction kTQdVojx…NgepRg39 on Explorer"><code>kTQdVojx…NgepRg39</code><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>
+      </li>
+      <li class="ledger__item">
+        <p class="status status--danger"><svg class="icon" aria-hidden="true"><use href="#i-unlink"/></svg>Binding mismatch</p>
+        <h4 class="ledger__name">Journal from another Job</h4>
+        <p class="ledger__text">Rejected by <code>vericode_escrow</code>: <code>JournalJobIdMismatch</code> (6014).</p>
+        <a class="ledger__tx link link--mono" href="https://explorer.solana.com/tx/5CBFajsaFvYreCJkQwiPuR8rHWtpBKCULoVAeysUJGRwTDfF2CXYzeFkuit6azjBjqQkoif8TbYwxByv8Ckmo4en?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Rejected transaction 5CBFajsa…8Ckmo4en on Explorer"><code>5CBFajsa…8Ckmo4en</code><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>
+      </li>
+      <li class="ledger__item">
+        <p class="status status--caution"><svg class="icon" aria-hidden="true"><use href="#i-hourglass"/></svg>Too early</p>
+        <h4 class="ledger__name">Refund before the deadline</h4>
+        <p class="ledger__text">Rejected by <code>vericode_escrow</code>: <code>DeadlineNotReached</code> (6021).</p>
+        <a class="ledger__tx link link--mono" href="https://explorer.solana.com/tx/4jDL97DGJRLQhB2m2NKK9kof85EFHSQMyPDPMmdhQ9mm6nkRKcbFF9HCuXcEiooWKKWomBCuhhTd2KbpYFAGiRHF?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Rejected transaction 4jDL97DG…YFAGiRHF on Explorer"><code>4jDL97DG…YFAGiRHF</code><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>
+      </li>
+      <li class="ledger__item">
+        <p class="status status--caution"><svg class="icon" aria-hidden="true"><use href="#i-repeat"/></svg>Already settled</p>
+        <h4 class="ledger__name">Second settlement</h4>
+        <p class="ledger__text">Rejected by <code>vericode_escrow</code>: <code>AlreadyReleased</code> (6007).</p>
+        <a class="ledger__tx link link--mono" href="https://explorer.solana.com/tx/j2pmqFWuTSe4H6isKyEFX3cBYmufEANP9Ue1p74tTUawXbiPSQ4KqckPW6WX3gnoAWsXE5XBdeVHEevpLa852ky?cluster=devnet" target="_blank" rel="noopener noreferrer" aria-label="Rejected transaction j2pmqFWu…pLa852ky on Explorer"><code>j2pmqFWu…pLa852ky</code><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>
+      </li>
+    </ul>
+
+    <p class="proof__more">
+      The full list, with compute units and balances, is in the
+      <a class="link" href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta#what-is-demonstrated" target="_blank" rel="noopener noreferrer">repository README</a>.
+    </p>
+  </div>
+</section>
+
+<!-- Product ================================================================================== -->
+<section class="section" id="product" aria-labelledby="product-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="product-title">An interface that justifies, not one that decides.</h2>
+      <p class="section-head__text">
+        The Hive interface shows what was committed, what the journal published, how the proof was
+        verified and what the transaction moved. Every value comes from the chain or from the local
+        proof, with its source.
+      </p>
+    </header>
+
+    <div class="tour" data-tabs>
+      <div class="tabs" role="tablist" aria-label="Screens of the Hive interface">
+        <button class="tabs__tab" type="button" role="tab" id="tour-tab-1" aria-controls="tour-panel-1" aria-selected="true">Jobs</button>
+        <button class="tabs__tab" type="button" role="tab" id="tour-tab-2" aria-controls="tour-panel-2" aria-selected="false" tabindex="-1">Commitments and observed</button>
+        <button class="tabs__tab" type="button" role="tab" id="tour-tab-3" aria-controls="tour-panel-3" aria-selected="false" tabindex="-1">On-chain verification</button>
+        <button class="tabs__tab" type="button" role="tab" id="tour-tab-4" aria-controls="tour-panel-4" aria-selected="false" tabindex="-1">Settlement</button>
+        <button class="tabs__tab" type="button" role="tab" id="tour-tab-5" aria-controls="tour-panel-5" aria-selected="false" tabindex="-1">Rejections</button>
+      </div>
+
+      <figure class="tour__panel" role="tabpanel" id="tour-panel-1" aria-labelledby="tour-tab-1">
+        <div class="tour__frame tour__frame--bleed">
+          <a class="tour__zoom" href="assets/img/product-jobs.webp" target="_blank" rel="noopener">
+            <img src="assets/img/product-jobs.webp" width="2400" height="1500" loading="lazy" decoding="async"
+               alt="Jobs list of the Hive interface on devnet: each Job with its state (Released, RefundedOnFail, RefundedOnTimeout, Funded), 1.00 Test USDC and the deadline slot, read from the chain.">
+            <span class="visually-hidden">Opens at full size in a new tab.</span>
+          </a>
+        </div>
+        <figcaption>State, amount and deadline from the last read of the chain, with the slot of that read. The status bar shows the cluster, the test token, the admitted <code>image_id</code>, the verifier and the escrow.</figcaption>
+      </figure>
+      <figure class="tour__panel" role="tabpanel" id="tour-panel-2" aria-labelledby="tour-tab-2">
+        <div class="tour__frame">
+          <a class="tour__zoom" href="assets/img/product-commitments.webp" target="_blank" rel="noopener">
+            <img src="assets/img/product-commitments.webp" width="1800" height="1128" loading="lazy" decoding="async"
+               alt="Commitments and observed: job_id, spec_hash, harness_hash, artifact_hash and image_id committed in the Job match the values published in the journal; the verdict is PASS.">
+            <span class="visually-hidden">Opens at full size in a new tab.</span>
+          </a>
+        </div>
+        <figcaption>Each field of the public journal against what the Job committed. The comparison is for display: the program is what blocks a mismatch.</figcaption>
+      </figure>
+      <figure class="tour__panel" role="tabpanel" id="tour-panel-3" aria-labelledby="tour-tab-3">
+        <div class="tour__frame">
+          <a class="tour__zoom" href="assets/img/product-onchain.webp" target="_blank" rel="noopener">
+            <img src="assets/img/product-onchain.webp" width="1066" height="902" loading="lazy" decoding="async"
+               alt="On-chain verification: the Groth16 verifier program THq1…QUge, risc0-solana v3.0.0, immutable, 99,541 compute units, Verify succeeded, and the settlement transaction.">
+            <span class="visually-hidden">Opens at full size in a new tab.</span>
+          </a>
+        </div>
+        <figcaption>The verifier program, its compute units and the settlement transaction, read from that transaction.</figcaption>
+      </figure>
+      <figure class="tour__panel" role="tabpanel" id="tour-panel-4" aria-labelledby="tour-tab-4">
+        <div class="tour__frame">
+          <a class="tour__zoom" href="assets/img/product-settlement.webp" target="_blank" rel="noopener">
+            <img src="assets/img/product-settlement.webp" width="1800" height="1199" loading="lazy" decoding="async"
+               alt="Settlement: Released for a verified PASS verdict. Transaction anatomy with Deliver and Release, the Groth16 verifier and SPL Token CPIs, and the balances: vault from 1.00 to 0.00, executor plus 1.00 Test USDC.">
+            <span class="visually-hidden">Opens at full size in a new tab.</span>
+          </a>
+        </div>
+        <figcaption>The transaction’s instructions in order, from its public logs, and the balances before and after.</figcaption>
+      </figure>
+      <figure class="tour__panel" role="tabpanel" id="tour-panel-5" aria-labelledby="tour-tab-5">
+        <div class="tour__frame">
+          <a class="tour__zoom" href="assets/img/product-rejections.webp" target="_blank" rel="noopener">
+            <img src="assets/img/product-rejections.webp" width="1800" height="887" loading="lazy" decoding="async"
+               alt="Transaction rejected: binding mismatch. The receipt of another Job was sent; job_id diverges while spec_hash, harness_hash and image_id match. Rejected by vericode_escrow: JournalJobIdMismatch (6014). The job state was not changed.">
+            <span class="visually-hidden">Opens at full size in a new tab.</span>
+          </a>
+        </div>
+        <figcaption>A receipt from another Job: the field that diverges, the program that rejected it and the transaction. The Job’s state did not change.</figcaption>
+      </figure>
+    </div>
+
+    <aside class="limits" aria-labelledby="limits-title">
+      <h3 class="limits__title" id="limits-title">Limits of this proof</h3>
+      <div class="limits__cols">
+        <div>
+          <h4 class="limits__label">What this verification shows</h4>
+          <!-- F2 (ratified, keep verbatim) -->
+          <p>A previously committed deterministic evaluator ran on the artifact delivered in the Job and produced the published verdict. The program moves the Test USDC only after checking the binding between journal, Job and delivery and verifying the proof.</p>
+        </div>
+        <div>
+          <h4 class="limits__label">What it does not show</h4>
+          <!-- F3 (ratified, keep verbatim) -->
+          <p>The proof attests to the execution of the fixed rule on this artifact, not to the quality of a piece of software. The v1 rule is trivial (output = 2 × input) and serves to demonstrate the flow.</p>
+          <p>It also does not show that the harness is complete, that the software has no vulnerabilities outside the tested model, or that it fits any other purpose.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- Under the hood =========================================================================== -->
+<section class="section section--panel" id="stack" aria-labelledby="stack-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="stack-title">Small parts, each one checkable.</h2>
+      <!-- F7 (ratified, keep verbatim) -->
+      <p class="section-head__text">The flow was reproduced with this repository’s CLI and prover in a clean environment: a fresh clone and fresh targets, with copied isolated toolchains, not a new machine.</p>
+    </header>
+
+    <ul class="tiles">
+      <li class="tile">
+        <svg class="icon icon--lg tile__icon" aria-hidden="true"><use href="#i-layers"/></svg>
+        <h3 class="tile__title">Pure Rust core</h3>
+        <p>Canonical types, hashing, the deterministic harness, the journal and the escrow policy, in one <code>no_std</code> crate with no Solana or RISC Zero dependency.</p>
+        <p class="tile__chips"><code>vericode-core</code></p>
+      </li>
+      <li class="tile">
+        <svg class="icon icon--lg tile__icon" aria-hidden="true"><use href="#i-cpu"/></svg>
+        <h3 class="tile__title">RISC Zero guest</h3>
+        <p>Evaluates the artifact with the fixed v1 rule and publishes the journal. A <code>FAIL</code> is a normal, provable output, never a crash.</p>
+        <p class="tile__chips"><code>RISC Zero 3.0.3</code> <code>4da06f90…fac0fb1a</code></p>
+      </li>
+      <li class="tile">
+        <svg class="icon icon--lg tile__icon" aria-hidden="true"><use href="#i-box"/></svg>
+        <h3 class="tile__title">Groth16, compressed locally</h3>
+        <p>The receipt is compressed to Groth16 in a Docker image pinned by digest, run with no pull and no network.</p>
+        <p class="tile__chips"><code>--pull=never</code> <code>--network=none</code></p>
+      </li>
+      <li class="tile">
+        <svg class="icon icon--lg tile__icon" aria-hidden="true"><use href="#i-lock"/></svg>
+        <h3 class="tile__title">Anchor escrow</h3>
+        <p><code>vericode_escrow</code> holds the Test USDC in a vault owned by the Job’s PDA and settles only through the pure policy. Its upgrade authority is <code>none</code>.</p>
+        <p class="tile__chips"><code>Anchor 0.31.1</code> <code>GZqb…wkCH</code></p>
+      </li>
+      <li class="tile">
+        <svg class="icon icon--lg tile__icon" aria-hidden="true"><use href="#i-workflow"/></svg>
+        <h3 class="tile__title">Direct CPI to the verifier</h3>
+        <p>The escrow calls the immutable Groth16 verifier of risc0-solana v3.0.0 directly. The upstream Verifier Router on devnet is not initialized, so it is not in the path.</p>
+        <p class="tile__chips"><code>THq1…QUge</code> <code>99,541 CU</code></p>
+      </li>
+      <li class="tile">
+        <svg class="icon icon--lg tile__icon" aria-hidden="true"><use href="#i-terminal"/></svg>
+        <h3 class="tile__title">Local worker and interface</h3>
+        <p>A worker on <code>127.0.0.1</code> runs the <code>vericode</code> CLI and the <code>vericode-prover</code> with fixed arguments. The interface shows the evidence; there is no wallet in the browser yet.</p>
+        <p class="tile__chips"><code>Python stdlib</code> <code>HTML, CSS, JS</code></p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- Who it is for, today and next ============================================================ -->
+<section class="section" id="who" aria-labelledby="who-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="who-title">Built for teams that hand work to agents.</h2>
+      <p class="section-head__text">
+        Bounded tasks, acceptance criteria that can be automated, and distinct parties on each side.
+      </p>
+    </header>
+
+    <div class="audience">
+      <article class="audience__item">
+        <svg class="icon icon--lg" aria-hidden="true"><use href="#i-code-xml"/></svg>
+        <h3 class="audience__title">AI-native software houses</h3>
+        <p>Tech leads and partners who hand bounded development tasks to coding agents, and want acceptance that both sides can check.</p>
+      </article>
+      <article class="audience__item">
+        <svg class="icon icon--lg" aria-hidden="true"><use href="#i-users"/></svg>
+        <h3 class="audience__title">Job platforms</h3>
+        <p>Operators that pay for delegated work and want each payment to follow the rule both sides agreed on before the work started.</p>
+      </article>
+    </div>
+
+    <div class="roadmap">
+      <div class="roadmap__col">
+        <h3 class="roadmap__title">Today, on devnet</h3>
+        <ul class="roadmap__list">
+          <li>One restricted, serialized artifact, evaluated by a fixed, deterministic rule.</li>
+          <li>Escrow with Test USDC on Solana devnet, with immutable programs.</li>
+          <li>Proof generated locally; verification and settlement in one transaction.</li>
+          <li>One local operator runs buyer and executor through the worker.</li>
+        </ul>
+      </div>
+      <div class="roadmap__col roadmap__col--next">
+        <h3 class="roadmap__title">Roadmap, not built yet</h3>
+        <!-- TODO(roadmap): add or change items only as plans ("we plan to"), never as features. -->
+        <ul class="roadmap__list">
+          <li>We plan to replace the trivial v1 rule with deterministic evaluators for real, bounded tasks, still on restricted artifacts.</li>
+          <li>We plan pilots that compare zkVM evidence with simpler mechanisms, such as signed CI and human review, to learn how much evidence each kind of task needs.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team ===================================================================================== -->
+<section class="section section--panel" id="team" aria-labelledby="team-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 class="section-head__title" id="team-title">The founding team</h2>
+      <!-- TODO(team): one or two sentences on who is building Hive and why. -->
+      <p class="section-head__text">Short paragraph about the team: what brought you to Hive and what you have built before.</p>
+    </header>
+
+    <!-- TODO(team): one card per founder. Duplicate or delete <li class="person"> blocks as needed.
+         To use a photo, replace the initials <span class="person__avatar"> with
+         <img class="person__photo" src="assets/img/team/your-name.jpg" width="96" height="96" alt="Your name">. -->
+    <ul class="team">
+      <li class="person">
+        <span class="person__avatar" aria-hidden="true">FN</span>
+        <h3 class="person__name">Founder name</h3>
+        <p class="person__role">Co-founder, role</p>
+        <p class="person__bio">Two lines of relevant background: what you built, where, and what you bring to Hive.</p>
+        <ul class="person__links">
+          <li><a class="link" href="#">LinkedIn</a></li>
+          <li><a class="link" href="#">GitHub</a></li>
+          <li><a class="link" href="#">X</a></li>
+        </ul>
+      </li>
+      <li class="person">
+        <span class="person__avatar" aria-hidden="true">FN</span>
+        <h3 class="person__name">Founder name</h3>
+        <p class="person__role">Co-founder, role</p>
+        <p class="person__bio">Two lines of relevant background: what you built, where, and what you bring to Hive.</p>
+        <ul class="person__links">
+          <li><a class="link" href="#">LinkedIn</a></li>
+          <li><a class="link" href="#">GitHub</a></li>
+          <li><a class="link" href="#">X</a></li>
+        </ul>
+      </li>
+      <li class="person">
+        <span class="person__avatar" aria-hidden="true">FN</span>
+        <h3 class="person__name">Founder name</h3>
+        <p class="person__role">Co-founder, role</p>
+        <p class="person__bio">Two lines of relevant background: what you built, where, and what you bring to Hive.</p>
+        <ul class="person__links">
+          <li><a class="link" href="#">LinkedIn</a></li>
+          <li><a class="link" href="#">GitHub</a></li>
+          <li><a class="link" href="#">X</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- FAQ ====================================================================================== -->
+<section class="section" id="faq" aria-labelledby="faq-title">
+  <div class="container faq">
+    <header class="faq__head">
+      <h2 class="section-head__title" id="faq-title">Questions</h2>
+      <p class="section-head__text">What Hive does today, and what it does not claim.</p>
+    </header>
+
+    <div class="faq__list">
+      <details class="faq__item">
+        <summary>Is this live on mainnet?<svg class="icon faq__icon" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+        <!-- F5 (ratified, keep verbatim) -->
+        <p>No. Devnet and Test USDC only; none of this exists on mainnet.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Who decides whether the executor gets paid?<svg class="icon faq__icon" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+        <!-- F4 (ratified, keep verbatim) -->
+        <p>The escrow and the verifier are immutable (upgrade authority <code>none</code>). No one, not even the project, changes the rules or decides the payment; there is also no e-stop.</p>
+        <p>The program pays or refunds from the verified verdict. No button in the interface decides it.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Can Hive check a whole codebase?<svg class="icon faq__icon" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+        <p>Not in this MVP. It verifies one restricted, serialized artifact with a deterministic rule and a fixed harness, not arbitrary repositories or general patches.</p>
+        <!-- F3 (ratified, keep verbatim) -->
+        <p>The proof attests to the execution of the fixed rule on this artifact, not to the quality of a piece of software. The v1 rule is trivial (output = 2 × input) and serves to demonstrate the flow.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Where is the proof generated, and how long does it take?<svg class="icon faq__icon" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+        <!-- F8 (ratified, keep verbatim) -->
+        <p>The proof is generated locally and compressed to Groth16 in a local Docker container, with no network access.</p>
+        <p>In our devnet runs, the RISC Zero proof took about 7 seconds and the Groth16 compression between 1.5 and 3 minutes.</p>
+      </details>
+      <details class="faq__item">
+        <summary>What happens with a tampered proof or another Job’s receipt?<svg class="icon faq__icon" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+        <p>The transaction is rejected and no funds move. A tampered seal fails inside the Groth16 verifier (<code>PairingError</code>, 6003), and a journal from another Job fails in the escrow (<code>JournalJobIdMismatch</code>, 6014). The links are in <a class="link" href="#proof">Proof</a>.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Why does the escrow call the verifier directly?<svg class="icon faq__icon" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+        <p>The upstream Verifier Router on devnet is not initialized. The escrow calls the immutable Groth16 verifier of risc0-solana v3.0.0 directly, by CPI, inside the settlement instruction.</p>
+      </details>
+      <details class="faq__item">
+        <summary>Can I reproduce it?<svg class="icon faq__icon" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+        <p>Yes. The commands to build, test, prove and settle from a clone are in the <a class="link" href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta#reproduce-from-a-clone" target="_blank" rel="noopener noreferrer">README</a>. The code and the CLI keep the project’s previous name, <code>vericode</code>.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- Final call to action ===================================================================== -->
+<section class="cta theme-dark" aria-labelledby="cta-title">
+  <div class="container cta__inner">
+    <h2 class="cta__title" id="cta-title">See a Job settle on devnet.</h2>
+    <p class="cta__text">Watch the demo, open the transactions, or run it yourself from a clean clone.</p>
+    <div class="cta__actions">
+      <a class="button button--primary button--lg" href="#demo">
+        <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>Watch the demo
+      </a>
+      <a class="button button--ghost button--lg" href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta" target="_blank" rel="noopener noreferrer">
+        <svg class="icon" aria-hidden="true"><use href="#i-code-xml"/></svg>Read the code on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- Footer =================================================================================== -->
+<footer class="site-footer theme-dark">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <img src="assets/brand/hive-horizontal-branco.svg" width="132" height="47" alt="Hive">
+      <p>Hive is an escrow for development tasks between AI agents.</p>
+      <!-- F5 (ratified, keep verbatim) -->
+      <p class="site-footer__note">Devnet and Test USDC only; none of this exists on mainnet.</p>
+    </div>
+    <nav class="site-footer__col" aria-label="Product">
+      <h2 class="site-footer__title">Product</h2>
+      <ul>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#proof">Proof</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <nav class="site-footer__col" aria-label="Code">
+      <h2 class="site-footer__title">Code</h2>
+      <ul>
+        <li><a href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta" target="_blank" rel="noopener noreferrer">GitHub repository</a></li>
+        <li><a href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta#reproduce-from-a-clone" target="_blank" rel="noopener noreferrer">Reproduce from a clone</a></li>
+        <li><a href="https://github.com/Lucas-Ibanez/colosseum-hackathon-sparta#limitations" target="_blank" rel="noopener noreferrer">Limitations</a></li>
+      </ul>
+    </nav>
+    <nav class="site-footer__col" aria-label="On Solana devnet">
+      <h2 class="site-footer__title">On Solana devnet</h2>
+      <ul>
+        <li><a href="https://explorer.solana.com/address/GZqbL2TbeDVHcNRosngaRfCwzV9YJT6iEbckYr8uwkCH?cluster=devnet" target="_blank" rel="noopener noreferrer">Escrow program</a></li>
+        <li><a href="https://explorer.solana.com/address/THq1qFYQoh7zgcjXoMXduDBqiZRCPeg3PvvMbrVQUge?cluster=devnet" target="_blank" rel="noopener noreferrer">Groth16 verifier</a></li>
+        <li><a href="https://explorer.solana.com/address/9TE2VPFmgrNxT22yS3sEZyRcMxLgJkwzgAoquWRXwV2F?cluster=devnet" target="_blank" rel="noopener noreferrer">Test USDC mint</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="container">
+    <div class="site-footer__bottom">
+      <p>© 2026 Hive. Code under the Apache-2.0 license.</p>
+      <p>The repository and the code keep the project’s previous name, <code>vericode</code>. Built for the Colosseum hackathon.</p>
+    </div>
+  </div>
+</footer>
+
+<p class="visually-hidden" id="live-region" aria-live="polite"></p>
+
+</body>
+</html>
