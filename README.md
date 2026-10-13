@@ -9,6 +9,7 @@ hive-landing/
 ├── index.html          the page (all content lives here)
 ├── styles.css          tokens (from the Hive DESIGN.md) and components
 ├── script.js           progressive enhancement only (the page works without it)
+├── favicon.svg         favicon (brand symbol on aubergine), plus favicon.ico and apple-touch-icon.png
 └── assets/
     ├── brand/          hive-horizontal-branco.svg (unchanged copy of brand/logo/)
     ├── fonts/          Manrope and IBM Plex Mono (WOFF2) and their OFL licenses
@@ -36,10 +37,8 @@ Search `index.html` for `TODO(`. These are the open items:
 
 | Marker | Where | What to do |
 | --- | --- | --- |
-| `TODO(video)` | `#demo`, three `data-youtube-id=""` attributes | Paste each YouTube video ID: technical demo, full uncut take, pitch. For another host, leave the ID empty and set `data-video-url` to the full link. Until then, the player shows "Video link coming soon" and stays disabled. |
-| `TODO(team)` | `#team` | Write the team paragraph. Fill one card per founder (name, role, short background, links). Delete the extra cards. For photos, add `assets/img/team/<name>.jpg` and replace the initials with the `<img class="person__photo">` shown in the comment. |
+| `TODO(video)` | `#demo`, two `data-youtube-id=""` attributes | The technical demo is set (`AmIFw_lY8Ck`). Paste the YouTube IDs of the full uncut take and the pitch. For another host, leave the ID empty and set `data-video-url` to the full link. Until then, those players show "Video link coming soon" and stay disabled. |
 | `TODO(site)` | `<head>` | After deploy, change `og:image` and `og:url` to absolute URLs. Social networks ignore relative image URLs. |
-| `TODO(brand)` | `<head>` | Favicon. The brand files do not include a favicon yet. Do not derive one from the symbol; add it when the brand team delivers it. |
 | `TODO(roadmap)` | `#who` | Optional. Add items only as plans ("we plan to"), never as features. |
 
 ## Rules for editing the text
@@ -75,7 +74,8 @@ The visual identity comes from the Hive `DESIGN.md`.
 - **Status** always shows an icon and a label, never color alone.
 - **The logo** stays exactly as delivered. The current SVGs are provisional; when the vector
   master exists, replace `assets/brand/hive-horizontal-branco.svg` with the new file (same
-  name). Minimum width of the horizontal signature: 128 px.
+  name), and regenerate `favicon.svg`, `favicon.ico` and `apple-touch-icon.png` from its
+  symbol. Minimum width of the horizontal signature: 128 px.
 - **No decoration:** no gradients, glows, honeycomb patterns, seals or mascot.
 - **Icons** are Lucide (ISC license). The sprite at the top of `index.html` holds only the
   icons in use.

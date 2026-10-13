@@ -19,8 +19,11 @@
 <meta property="og:url" content="./">
 <meta name="twitter:card" content="summary_large_image">
 
-<!-- TODO(brand): favicon. brand/MANIFEST.md lists the favicon and app icons as not produced yet;
-     do not derive one from the symbol. Add <link rel="icon"> here when the brand files exist. -->
+<!-- Favicon: the brand symbol on aubergine, built from the provisional logo trace.
+     Regenerate these three files when the vector master of the logo exists. -->
+<link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <link rel="preload" href="assets/fonts/manrope-wght-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
@@ -392,10 +395,11 @@
         <button class="tabs__tab" type="button" role="tab" id="video-tab-3" aria-controls="video-panel-3" aria-selected="false" tabindex="-1">Pitch <span class="tabs__meta">3 min</span></button>
       </div>
 
-      <!-- TODO(video): paste each YouTube video ID in data-youtube-id (the part after "v=" in the URL).
+      <!-- The technical demo is https://www.youtube.com/watch?v=AmIFw_lY8Ck.
+           TODO(video): paste the IDs of the full take and the pitch in data-youtube-id (the part after "v=" in the URL).
            For another host, leave data-youtube-id empty and set data-video-url to the full link. -->
       <div class="demo__panel" role="tabpanel" id="video-panel-1" aria-labelledby="video-tab-1">
-        <div class="video" data-video data-youtube-id="" data-video-url="" data-title="Hive technical demo">
+        <div class="video" data-video data-youtube-id="AmIFw_lY8Ck" data-video-url="" data-title="Hive technical demo">
           <img class="video__poster" src="assets/img/demo-poster.webp" width="1920" height="1200" loading="lazy" decoding="async" alt="">
           <button class="video__play" type="button" data-video-play>
             <span class="video__icon"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-play"/></svg></span>
@@ -698,46 +702,34 @@
   <div class="container">
     <header class="section-head">
       <h2 class="section-head__title" id="team-title">The founding team</h2>
-      <!-- TODO(team): one or two sentences on who is building Hive and why. -->
-      <p class="section-head__text">Short paragraph about the team: what brought you to Hive and what you have built before.</p>
+      <p class="section-head__text">Engineering, product, and strategy to take Hive from MVP to pilots.</p>
     </header>
 
-    <!-- TODO(team): one card per founder. Duplicate or delete <li class="person"> blocks as needed.
-         To use a photo, replace the initials <span class="person__avatar"> with
-         <img class="person__photo" src="assets/img/team/your-name.jpg" width="96" height="96" alt="Your name">. -->
+    <!-- To use a photo, replace the initials <span class="person__avatar"> with
+         <img class="person__photo" src="assets/img/team/your-name.jpg" width="96" height="96" alt="Your name">.
+         To add profile links, append <ul class="person__links"><li><a class="link" href="…">LinkedIn</a></li></ul>
+         after the bio. -->
     <ul class="team">
       <li class="person">
-        <span class="person__avatar" aria-hidden="true">FN</span>
-        <h3 class="person__name">Founder name</h3>
-        <p class="person__role">Co-founder, role</p>
-        <p class="person__bio">Two lines of relevant background: what you built, where, and what you bring to Hive.</p>
+        <span class="person__avatar" aria-hidden="true">LI</span>
+        <h3 class="person__name">Lucas Ibanez</h3>
+        <p class="person__role">CEO &amp; CTO</p>
+        <p class="person__bio">Technical architecture, verification and on-chain settlement.</p>
         <ul class="person__links">
-          <li><a class="link" href="#">LinkedIn</a></li>
-          <li><a class="link" href="#">GitHub</a></li>
-          <li><a class="link" href="#">X</a></li>
+          <li><a class="link" href="https://github.com/Lucas-Ibanez" target="_blank" rel="noopener noreferrer">GitHub</a></li>
         </ul>
       </li>
       <li class="person">
-        <span class="person__avatar" aria-hidden="true">FN</span>
-        <h3 class="person__name">Founder name</h3>
-        <p class="person__role">Co-founder, role</p>
-        <p class="person__bio">Two lines of relevant background: what you built, where, and what you bring to Hive.</p>
-        <ul class="person__links">
-          <li><a class="link" href="#">LinkedIn</a></li>
-          <li><a class="link" href="#">GitHub</a></li>
-          <li><a class="link" href="#">X</a></li>
-        </ul>
+        <span class="person__avatar" aria-hidden="true">HM</span>
+        <h3 class="person__name">Henrique Martins</h3>
+        <p class="person__role">Strategy Lead</p>
+        <p class="person__bio">Positioning, market research and pilot strategy.</p>
       </li>
       <li class="person">
-        <span class="person__avatar" aria-hidden="true">FN</span>
-        <h3 class="person__name">Founder name</h3>
-        <p class="person__role">Co-founder, role</p>
-        <p class="person__bio">Two lines of relevant background: what you built, where, and what you bring to Hive.</p>
-        <ul class="person__links">
-          <li><a class="link" href="#">LinkedIn</a></li>
-          <li><a class="link" href="#">GitHub</a></li>
-          <li><a class="link" href="#">X</a></li>
-        </ul>
+        <span class="person__avatar" aria-hidden="true">LP</span>
+        <h3 class="person__name">Leonardo Papandrea</h3>
+        <p class="person__role">COO &amp; CPO</p>
+        <p class="person__bio">Acceptance workflow, product priorities and operations.</p>
       </li>
     </ul>
   </div>
